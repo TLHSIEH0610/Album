@@ -12,7 +12,7 @@ import logger from "morgan";
 import indexRouter from "./routes/index";
 // const usersRouter = require("./routes/users");
 import usersRouter from "./routes/index";
-
+import mongoose from "mongoose";
 const app = express();
 // const albumRouter = require("./routes/albumRouter");
 // const paymentRouter = require("./routes/paymentRouter");
@@ -52,8 +52,12 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-const server = app.listen(3000, () => {
+app.listen(3000, () => {
   console.log(`App running on port ${3000}...`);
 });
 
-module.exports = app;
+mongoose
+  .connect("mongodb://localhost:27017/Album")
+  .then(() => console.log("connected"));
+
+export default app;
