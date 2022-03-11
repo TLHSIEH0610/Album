@@ -3,13 +3,18 @@ import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
-import indexRouter from "./routes/index";
-import usersRouter from "./routes/index";
+import usersRouter from "./routes/userRouter";
 import mongoose from "mongoose";
-const app = express();
 import albumRouter from "./routes/albumRouter";
 import paymentRouter from "./routes/paymentRouter";
+import AppError from "./utils/appError";
+import globalErrorHandler from "./controllers/errorController";
+import dotenv from "dotenv";
+import helmet from "helmet";
 
+dotenv.config({ path: "./config.env" });
+
+const app = express();
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
@@ -20,12 +25,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-//Routes
+app.use(helmet());
 
-app.use("/", indexRouter);
+//Routes
 app.use("/users", usersRouter);
 app.use("/albums", albumRouter);
 app.use("/payment", paymentRouter);
+//not find error
+app.all("*", (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl}, please check again!`, 404));
+});
+//global error
+app.use(globalErrorHandler);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
