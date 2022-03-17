@@ -13,7 +13,9 @@ const multerStorage = multer.diskStorage({
 
     cb(
       null,
-      `${req.body.name}-${file.originalname}-${Date.now()}.${extension}`
+      `${req.body.name || req.params.id}-${
+        file.originalname
+      }-${Date.now()}.${extension}`
     ); //ablum-photo--date.extension
   },
 });
@@ -52,16 +54,36 @@ export const getAlbum = catchAsync(async (req, res, next) => {
 });
 
 export const deleteAlbum = catchAsync(async (req, res, next) => {
-  const data = await Album.findByIdAndUpdate(req.params.id, req.body);
+  const data = await Album.findByIdAndDelete(req.params.id);
 
   res.status(200).json({
     status: "success",
-    data: data,
+    data: null,
   });
 });
 
 export const updateAlbum = catchAsync(async (req, res, next) => {
-  const data = await Album.findByIdAndDelete(req.params.id);
+  // console.log(req.params.id, req.body);
+  let data;
+
+  //add images
+  if (req.files) {
+    console.log(req.body);
+    req.body.photos = req.files["photos"].map((file) => file.filename);
+    data = await Album.findByIdAndUpdate(
+      { _id: req.params.id },
+      {
+        $push: {
+          photos: req.body.photos,
+        },
+      }
+    );
+  }
+  //delete images
+  else {
+    data = await Album.findByIdAndUpdate(req.params.id, req.body);
+  }
+  console.log("data", data);
 
   if (!data) {
     throw Error("id not exist");
@@ -69,7 +91,7 @@ export const updateAlbum = catchAsync(async (req, res, next) => {
 
   res.status(204).json({
     status: "success",
-    data: null,
+    data: data,
   });
 });
 

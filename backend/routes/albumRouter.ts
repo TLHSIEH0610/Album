@@ -36,7 +36,7 @@ router.get("/coverpages", albumController.getCoverPages);
 router
   .route("/:id")
   .get(albumController.getAlbum)
-  .patch(albumController.updateAlbum)
+  .patch(albumController.uploadAlbumImages, albumController.updateAlbum)
   .delete(albumController.deleteAlbum);
 
 // /* Get album */

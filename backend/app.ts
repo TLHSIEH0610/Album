@@ -11,10 +11,14 @@ import AppError from "./utils/appError";
 import globalErrorHandler from "./controllers/errorController";
 import dotenv from "dotenv";
 import helmet from "helmet";
+import cors from "cors";
 
 dotenv.config({ path: "./config.env" });
 
 const app = express();
+
+app.use(cors());
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
