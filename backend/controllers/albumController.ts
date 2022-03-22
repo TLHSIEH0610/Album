@@ -98,7 +98,6 @@ export const updateAlbum = catchAsync(async (req, res, next) => {
 export const getCoverPages = catchAsync(async (req, res, next) => {
   const CoverPages = await Album.find().select(["_id", "name", "coverPage"]);
 
-  console.log(CoverPages);
   res.status(200).json({
     status: "success",
     data: CoverPages,

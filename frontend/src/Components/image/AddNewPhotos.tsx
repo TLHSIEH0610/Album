@@ -3,39 +3,29 @@ import { useState } from "react";
 import Button from "@mui/material/Button";
 import Input from "@mui/material/Input";
 import { useForm } from "react-hook-form";
-
+import { useParams } from "react-router-dom";
 import { Modal, Box } from "@mui/material";
+import { useUpdatePhotos } from "services/album";
 
 interface FormValues {
   name: string;
-  coverPage: string[];
   photos: string[];
 }
 
-const ImageModal = () => {
+const NewPhotoModal = () => {
   const { handleSubmit, register } = useForm<FormValues>();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
+  const { mutateAsync: updatePhotoMutation } = useUpdatePhotos();
+  const { id = "" } = useParams();
   const onSubmit = (values: FormValues) => {
     const formData = new FormData();
-
     formData.append("name", values.name);
-    formData.append("coverPage", values.coverPage[0]);
-    Array.from(values.photos).forEach((photo: string) =>
+    Array.from(values.photos).forEach((photo) =>
       formData.append("photos", photo)
     );
-
-    fetch(`${process.env.REACT_APP_DEV_URL}/albums`, {
-      method: "POST",
-      body: formData,
-    }).then((res) => {
-      if (!res.ok) {
-        throw Error("add album failed");
-      }
-      console.log(res.json());
-    });
+    updatePhotoMutation({ formData, id });
   };
 
   return (
@@ -47,7 +37,7 @@ const ImageModal = () => {
         onClick={handleOpen}
         variant="contained"
       >
-        Create Album
+        New
       </Button>
       <Modal
         open={open}
@@ -69,16 +59,6 @@ const ImageModal = () => {
           }}
         >
           <form onSubmit={handleSubmit(onSubmit)}>
-            <section>
-              <label>Album Name</label>
-              <Input {...register("name")} type="text" />
-            </section>
-
-            <section>
-              <label>Coverpage</label>
-              <Input {...register("coverPage")} type="file" />
-            </section>
-
             <section>
               <label>Photos</label>
               <Input
@@ -106,4 +86,4 @@ const ImageModal = () => {
   );
 };
 
-export default ImageModal;
+export default NewPhotoModal;

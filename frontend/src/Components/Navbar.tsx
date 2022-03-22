@@ -6,8 +6,22 @@ import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
 // import IconButton from "@mui/material/IconButton";
 // import MenuIcon from "@mui/icons-material/Menu";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "store/hook";
+import { useLogout } from "services/auth";
+import { setIsLogin } from "store/slices/authSlice";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const { isLogin } = useAppSelector((status) => status.auth);
+  const dispatch = useAppDispatch();
+
+  const { mutateAsync: logoutMutation } = useLogout();
+  const logout = () => {
+    dispatch(setIsLogin(false));
+    logoutMutation();
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -24,7 +38,15 @@ const Navbar = () => {
           {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             News
           </Typography> */}
-          <Button color="inherit">Login</Button>
+          {isLogin ? (
+            <Button color="inherit" onClick={() => logout()}>
+              Logout
+            </Button>
+          ) : (
+            <Button color="inherit" onClick={() => navigate("/login")}>
+              Login
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
     </Box>

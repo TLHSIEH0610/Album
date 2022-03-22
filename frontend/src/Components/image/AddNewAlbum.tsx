@@ -3,37 +3,24 @@ import { useState } from "react";
 import Button from "@mui/material/Button";
 import Input from "@mui/material/Input";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useNewAlbum } from "services/album";
 import { Modal, Box } from "@mui/material";
 
 interface FormValues {
   name: string;
-  coverPage: string[];
+  coverPage: string;
   photos: string[];
 }
 
-const NewPhotoModal = () => {
+const NewAlbumModal = () => {
   const { handleSubmit, register } = useForm<FormValues>();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  let { id } = useParams();
+  const { mutateAsync: NewAlbumMutation } = useNewAlbum();
+
   const onSubmit = (values: FormValues) => {
-    const formData = new FormData();
-
-    Array.from(values.photos).forEach((photo: string) =>
-      formData.append("photos", photo)
-    );
-
-    fetch(`${process.env.REACT_APP_DEV_URL}/albums/${id}`, {
-      method: "PATCH",
-      body: formData,
-    }).then((res) => {
-      if (!res.ok) {
-        throw Error("add album failed");
-      }
-      console.log(res.json());
-    });
+    NewAlbumMutation(values);
   };
 
   return (
@@ -45,7 +32,7 @@ const NewPhotoModal = () => {
         onClick={handleOpen}
         variant="contained"
       >
-        New
+        Create Album
       </Button>
       <Modal
         open={open}
@@ -67,6 +54,16 @@ const NewPhotoModal = () => {
           }}
         >
           <form onSubmit={handleSubmit(onSubmit)}>
+            <section>
+              <label>Album Name</label>
+              <Input {...register("name")} type="text" />
+            </section>
+
+            <section>
+              <label>Coverpage</label>
+              <Input {...register("coverPage")} type="file" />
+            </section>
+
             <section>
               <label>Photos</label>
               <Input
@@ -94,4 +91,4 @@ const NewPhotoModal = () => {
   );
 };
 
-export default NewPhotoModal;
+export default NewAlbumModal;

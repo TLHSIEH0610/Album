@@ -1,48 +1,59 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { IAlbum } from "../../Types";
+import { IAlbum } from "types";
 import { ImageList, ImageListItem, Stack, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import NewPhotoModal from "./New-Photos-Modal";
+import NewPhotoModal from "./AddNewPhotos";
+import { useAlbum, useUpdatePhotos } from "services/album";
 
 const Photos = () => {
-  let { id } = useParams();
-  const [data, setData] = useState<string[]>([]);
-  const [restoreData, setRestoreData] = useState<string[]>([]);
+  const { id = "" } = useParams();
+  // const [data, setData] = useState<string[]>([]);
+
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
+  const { data = [] } = useAlbum(id);
+  const [tempData, setTempData] = useState(data);
+  const { mutateAsync: updatePhotoMutation } = useUpdatePhotos();
 
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_DEV_URL}/albums/${id}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw Error("Fail to get data");
-        }
-        return res.json();
-      })
-      .then((res) => {
-        setData(res.data.photos);
-        setRestoreData(res.data.photos);
-      })
-      .catch((err: Error) => console.log(err));
-  }, []);
+  console.log(tempData);
+
+  // useEffect(() => {
+  //   fetch(`${process.env.REACT_APP_DEV_URL}/albums/${id}`)
+  //     .then((res) => {
+  //       if (!res.ok) {
+  //         throw Error("Fail to get data");
+  //       }
+  //       return res.json();
+  //     })
+  //     .then((res) => {
+  //       setData(res.data.photos);
+  //       setRestoreData(res.data.photos);
+  //     })
+  //     .catch((err: Error) => console.log(err));
+  // }, []);
 
   const updaePhotos = () => {
-    fetch(`${process.env.REACT_APP_DEV_URL}/albums/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ photos: data }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    }).then(() => {
-      setIsEditing(false);
-    });
+    const formData = new FormData();
+    tempData.forEach((data) => formData.append("photos", data));
+
+    // fetch(`${process.env.REACT_APP_DEV_URL}/albums/${id}`, {
+    //   method: "PATCH",
+    //   body: JSON.stringify(),
+    //   headers: {
+    //     "Content-type": "application/json; charset=UTF-8",
+    //   },
+    // }).then(() => {
+    //   setIsEditing(false);
+    // });
+
+    updatePhotoMutation({ formData, id }).then(() => setIsEditing(false));
   };
 
   const removeImageFromData = (image: string) => {
     const newData = [...data].filter((item) => item !== image);
 
-    setData(newData);
+    setTempData(newData);
   };
 
   return (
@@ -72,7 +83,7 @@ const Photos = () => {
           variant="contained"
           onClick={() => {
             setIsEditing(false);
-            setData(restoreData);
+            setTempData(data);
           }}
           sx={{ display: isEditing ? "block" : "none" }}
         >
@@ -82,7 +93,7 @@ const Photos = () => {
       </Stack>
 
       <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
-        {data.map((item) => (
+        {tempData.map((item: any) => (
           <ImageListItem
             key={item}
             sx={{
